@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reloj Futurista</title>
+    <style>
+        body {
+            background-color: #0a0e17;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        canvas {
+            border-radius: 24px;
+            box-shadow: 
+                0 0 30px rgba(0, 200, 255, 0.2),
+                0 0 60px rgba(0, 150, 255, 0.1);
+            background: linear-gradient(135deg, #0d1222, #12182e);
+            border: 1px solid rgba(0, 180, 255, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="reloj" width="800" height="450"></canvas>
+
+    <script>
+        const canvas = document.getElementById("reloj");
+        const ctx = canvas.getContext("2d");
+
+        function drawApp() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Fondo con ligero brillo de fondo futurista
+            const gradient = ctx.createRadialGradient(400, 225, 0, 400, 225, 500);
+            gradient.addColorStop(0, 'rgba(0, 30, 60, 0.2)');
+            gradient.addColorStop(1, 'rgba(10, 15, 30, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(225, 225);
+            drawAnalogClock(ctx, 180);
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(450, 50);
+            drawDigitalPanel(ctx);
+            ctx.restore();
+        }
+
+        function drawAnalogClock(ctx, radius) {
+            drawFace(ctx, radius);
+            drawTicks(ctx, radius);
+            drawNumbers(ctx, radius);
+            drawTimeHands(ctx, radius);
+            drawCenterGlow(ctx, radius);
+        }
+
+        function drawFace(ctx, radius) {
+            // Esfera oscura con brillo azul tenue
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#0c1427';
+            ctx.fill();
+
+            // Borde de neón azul
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(0, 200, 255, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Círculo de guía interno (sutil)
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.95, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(0, 150, 255, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawTicks(ctx, radius) {
+            for (let i = 0; i < 60; i++) {
+                const angle = (i * Math.PI) / 30;
+                ctx.save();
+                ctx.rotate(angle);
+                ctx.beginPath();
+                if (i % 5 === 0) {
+                    ctx.moveTo(0, -radius * 0.88);
+                    ctx.lineTo(0, -radius * 0.95);
+                    ctx.lineWidth = 2.5;
+                    ctx.strokeStyle = '#00ccff';
+                } else {
+                    ctx.moveTo(0, -radius * 0.91);
+                    ctx.lineTo(0, -radius * 0.95);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(0, 180, 255, 0.5)';
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function drawNumbers(ctx, radius) {
+            const nums = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+            ctx.font = `bold ${radius * 0.13}px 'Courier New'`;
+            ctx.textBaseline = "middle";
+            ctx.textAlign = "center";
+            ctx.fillStyle = '#00e5ff';
+
+            for (let num = 1; num <= 12; num++) {
+                let ang = num * Math.PI / 6;
+                ctx.save();
+                ctx.translate(Math.sin(ang) * radius * 0.78, -Math.cos(ang) * radius * 0.78);
+                ctx.fillText(nums[num - 1], 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function drawTimeHands(ctx, radius) {
+            const now = new Date();
+            let hour = now.getHours() % 12;
+            let minute = now.getMinutes();
+            let second = now.getSeconds();
+
+            hour = (hour * Math.PI / 6) + (minute * Math.PI / 360) + (second * Math.PI / 21600);
+            minute = (minute * Math.PI / 30) + (second * Math.PI / 1800);
+            second = second * Math.PI / 30;
+
+            // Manecilla de hora: cian suave
+            drawHand(ctx, hour, radius * 0.5, radius * 0.05, 'rgba(0, 220, 255, 0.9)');
+            // Manecilla de minuto: cian brillante
+            drawHand(ctx, minute, radius * 0.75, radius * 0.03, '#00e5ff');
+            // Segundero: rojo neón (para contraste y dinamismo)
+            drawHand(ctx, second, radius * 0.85, radius * 0.01, '#ff0055');
+        }
+
+        function drawHand(ctx, angle, length, width, color) {
+            ctx.save();
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -length);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawCenterGlow(ctx, radius) {
+            // Efecto de núcleo brillante
+            const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, radius * 0.08);
+            glow.addColorStop(0, 'rgba(0, 200, 255, 1)');
+            glow.addColorStop(1, 'rgba(0, 50, 100, 0)');
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 0.08, 0, 2 * Math.PI);
+            ctx.fillStyle = glow;
+            ctx.fill();
+        }
+
+        function drawDigitalPanel(ctx) {
+            const now = new Date();
+            const days = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+            const months = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+            const dayName = days[now.getDay()];
+            const dayNum = now.getDate();
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+
+            // Día de la semana – cian brillante
+            ctx.fillStyle = '#00e5ff';
+            ctx.font = "bold 28px 'Courier New'";
+            ctx.textAlign = "center";
+            ctx.fillText(dayName, 150, 50);
+
+            // Fecha – gris azulado claro
+            ctx.fillStyle = '#a0d2ff';
+            ctx.font = "18px 'Courier New'";
+            ctx.fillText(`${dayNum} DE ${monthName}, ${year}`, 150, 85);
+
+            // Línea divisoria con efecto de luz
+            const lineGradient = ctx.createLinearGradient(50, 0, 250, 0);
+            lineGradient.addColorStop(0, 'transparent');
+            lineGradient.addColorStop(0.5, 'rgba(0, 200, 255, 0.6)');
+            lineGradient.addColorStop(1, 'transparent');
+            ctx.strokeStyle = lineGradient;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(50, 115);
+            ctx.lineTo(250, 115);
+            ctx.stroke();
+
+            // Hora digital grande – blanco brillante con ligera sombra
+            ctx.fillStyle = '#ffffff';
+            ctx.font = "bold 58px 'Courier New'";
+            ctx.fillText(`${h}:${m}:${s}`, 150, 190);
+
+            // Etiqueta tecnológica
+            ctx.fillStyle = 'rgba(0, 180, 255, 0.7)';
+            ctx.font = "12px 'Courier New'";
+            ctx.fillText("SYNCHRONIZED • LOCAL TIME", 150, 220);
+        }
+
+        setInterval(drawApp, 1000);
+        drawApp();
+    </script>
+</body>
+</html>
